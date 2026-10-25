@@ -1,0 +1,8 @@
+{
+  "name": "vless-rus-subscriptions",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
+}
