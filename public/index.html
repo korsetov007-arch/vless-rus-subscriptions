@@ -6,16 +6,49 @@
     <title>VLESS-подписки</title>
     <style>
       body { max-width: 42rem; margin: 3rem auto; padding: 0 1rem; font: 1rem/1.6 system-ui, sans-serif; }
-      code { overflow-wrap: anywhere; }
+      .subscription { margin: 1.5rem 0; padding: 1rem; border: 1px solid #ccc; border-radius: .5rem; }
+      .subscription code { display: block; margin: .5rem 0; overflow-wrap: anywhere; }
+      button { padding: .5rem .75rem; cursor: pointer; }
+      #status { min-height: 1.6em; }
     </style>
   </head>
   <body>
     <h1>VLESS-подписки</h1>
-    <p>Добавьте нужную ссылку в Happ или Nekoray как URL-подписку.</p>
-    <ul>
-      <li>Компьютер: <code><a href="/desktop">/desktop</a></code></li>
-      <li>Мобильное устройство: <code><a href="/mobile">/mobile</a></code></li>
-    </ul>
-    <p>Списки берутся из исходного репозитория и обновляются с задержкой до минуты.</p>
+    <p>Скопируйте полный URL и добавьте его в Happ или Nekoray именно как URL-подписку. Клиент будет обновлять список по этой ссылке.</p>
+    <section class="subscription">
+      <strong>Компьютер</strong>
+      <code id="desktop-url"></code>
+      <button type="button" data-copy="desktop">Скопировать ссылку</button>
+    </section>
+    <section class="subscription">
+      <strong>Мобильное устройство</strong>
+      <code id="mobile-url"></code>
+      <button type="button" data-copy="mobile">Скопировать ссылку</button>
+    </section>
+    <p id="status" role="status" aria-live="polite"></p>
+    <p>Подписка автоматически получает обновления исходного списка — обычно в течение минуты после его изменения.</p>
+    <script>
+      const subscriptionUrls = {
+        desktop: new URL("/desktop", window.location.origin).href,
+        mobile: new URL("/mobile", window.location.origin).href,
+      };
+
+      for (const [name, url] of Object.entries(subscriptionUrls)) {
+        document.getElementById(`${name}-url`).textContent = url;
+      }
+
+      document.querySelectorAll("[data-copy]").forEach((button) => {
+        button.addEventListener("click", async () => {
+          const url = subscriptionUrls[button.dataset.copy];
+          const status = document.getElementById("status");
+          try {
+            await navigator.clipboard.writeText(url);
+            status.textContent = "Ссылка скопирована. Добавьте её в клиент как URL-подписку.";
+          } catch {
+            status.textContent = `Не удалось скопировать. Скопируйте ссылку вручную: ${url}`;
+          }
+        });
+      });
+    </script>
   </body>
 </html>
