@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { serveSubscription } from "../_lib/subscription.js";
 
-test("returns a base64 subscription containing only VLESS entries", async () => {
+test("returns a plain-text subscription with Happ metadata and only VLESS entries", async () => {
   globalThis.caches = {
     default: {
       match: async () => undefined,
@@ -17,12 +17,13 @@ test("returns a base64 subscription containing only VLESS entries", async () => 
   const response = await serveSubscription(
     new Request("https://example.pages.dev/desktop"),
     "https://raw.githubusercontent.com/example/list.txt",
+    "VLESS Desktop",
   );
 
   assert.equal(response.status, 200);
   assert.equal(
-    Buffer.from(await response.text(), "base64").toString("utf8"),
-    "vless://id@example.com:443#Тест\n",
+    await response.text(),
+    "#profile-title: VLESS Desktop\n#profile-update-interval: 1\nvless://id@example.com:443#Тест\n",
   );
   assert.equal(response.headers.get("cache-control"), "public, max-age=60, s-maxage=60");
 });
@@ -39,6 +40,7 @@ test("reports an upstream HTTP error instead of returning an empty subscription"
   const response = await serveSubscription(
     new Request("https://example.pages.dev/mobile"),
     "https://raw.githubusercontent.com/example/list.txt",
+    "VLESS Mobile",
   );
 
   assert.equal(response.status, 502);

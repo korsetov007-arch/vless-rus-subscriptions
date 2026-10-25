@@ -7,18 +7,7 @@ const responseHeaders = {
   "X-Content-Type-Options": "nosniff",
 };
 
-function encodeBase64Utf8(value) {
-  const bytes = new TextEncoder().encode(value);
-  let binary = "";
-
-  for (let offset = 0; offset < bytes.length; offset += 0x8000) {
-    binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
-  }
-
-  return btoa(binary);
-}
-
-export async function serveSubscription(request, sourceUrl) {
+export async function serveSubscription(request, sourceUrl, profileTitle) {
   const cache = caches.default;
   const cacheKey = new Request(new URL(request.url).toString(), { method: "GET" });
   const cachedResponse = await cache.match(cacheKey);
@@ -59,9 +48,13 @@ export async function serveSubscription(request, sourceUrl) {
     });
   }
 
-  const response = new Response(encodeBase64Utf8(`${entries.join("\n")}\n`), {
-    headers: responseHeaders,
-  });
+  const body = [
+    `#profile-title: ${profileTitle}`,
+    "#profile-update-interval: 1",
+    ...entries,
+    "",
+  ].join("\n");
+  const response = new Response(body, { headers: responseHeaders });
 
   await cache.put(cacheKey, response.clone());
   return response;
