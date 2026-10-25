@@ -1,12 +1,11 @@
 # VLESS-подписки для Happ и Nekoray
 
-Cloudflare Pages Functions публикуют два URL-профиля:
+GitHub Actions каждый час загружает исходные списки, генерирует статические файлы подписок и публикует их на GitHub Pages:
 
-- `/desktop` — `BLACK_VLESS_RUS.txt`
-- `/mobile` — `BLACK_VLESS_RUS_mobile.txt`
+- `/desktop.txt` — `BLACK_VLESS_RUS.txt`
+- `/mobile.txt` — `BLACK_VLESS_RUS_mobile.txt`
 
-Каждый endpoint при запросе берёт актуальный файл из `igareck/vpn-configs-for-russia` и отдаёт обычный список ссылок
-(`Content-Type: text/plain; charset=utf-8`), как и сам исходный репозиторий.
+Страницу и ссылки можно открыть в корне сайта GitHub Pages. Подписки отдаются как обычные текстовые списки ссылок, включая метаданные Happ в теле ответа.
 
 - **Протоколы:** `vless`, `vmess`, `trojan`, `ss`, `hysteria2`/`hy2`, `tuic`. Остальное отбрасывается.
 - **Дубли:** одна и та же нода в исходнике повторяется 4–8 раз с разным `fp=` (chrome/firefox/ios/…). Такие записи
@@ -14,25 +13,21 @@ Cloudflare Pages Functions публикуют два URL-профиля:
   схлопывания: добавьте `?full=1` к ссылке.
 - **Название профиля:** `🏴 BLACK Mobile (43)` / `🏴 BLACK Full (37)` — с актуальным числом серверов. Эмодзи передаются
   как `base64:` (так требует Happ), лимит Happ на название — 25 символов.
-- **Автообновление:** ответ кэшируется на 60 секунд, клиент перезапрашивает подписку раз в час
-  (`profile-update-interval: 1`). Пересборка Pages не нужна.
-- При недоступности GitHub-файла endpoint вернёт HTTP 502, а не пустую подписку.
+- **Автообновление:** GitHub Actions обновляет и публикует файлы каждый час; клиенты также получают интервал обновления в один час (`profile-update-interval: 1`). При каждом push в `main` запускается публикация новой версии.
+- При недоступности исходного файла сборка завершится ошибкой, и GitHub Pages не заменит текущую опубликованную версию пустой подпиской.
 
-## Публикация через GitHub и Cloudflare Pages
+## Настройка GitHub Pages
 
-1. Загрузите проект в GitHub-репозиторий.
-2. Cloudflare: **Workers & Pages → Create application → Pages → Connect to Git**.
-3. Preset **None**, каталог сборки `public`, команда сборки пустая.
-4. После деплоя будет домен вида `https://<имя-проекта>.pages.dev`.
-5. В Happ или Nekoray добавьте как **URL-подписку** (не как разовый импорт):
-   - `https://<имя-проекта>.pages.dev/desktop`
-   - `https://<имя-проекта>.pages.dev/mobile`
+1. В GitHub откройте **Settings → Pages** и выберите **Source: GitHub Actions**.
+2. Откройте **Actions**, разрешите запуск workflow, если GitHub это запросит, и запустите **Build and deploy GitHub Pages** через **Run workflow**. Также он запускается при push в `main` и затем каждый час.
+3. После успешного деплоя GitHub Pages опубликует сайт по адресу `https://<владелец>.github.io/vless-rus-subscriptions/`.
+4. В Happ или Nekoray добавьте как **URL-подписку** (не как разовый импорт):
+   - `https://<владелец>.github.io/vless-rus-subscriptions/desktop.txt`
+   - `https://<владелец>.github.io/vless-rus-subscriptions/mobile.txt`
 
 ## Если Happ пишет «тайм-аут»
 
-Если в браузере ссылка открывается, а в Happ нет, проверьте её с телефона по мобильным данным и по Wi‑Fi. Часть
-российских операторов ограничивает соединения к IP Cloudflare; поможет свой домен через Cloudflare или раздача
-подписки с другого хостинга (например, через GitHub Actions + GitHub Pages).
+GitHub Actions по расписанию может стартовать с задержкой, поэтому изменения в исходном списке появляются не строго в минуту обновления, а после очередного успешного запуска workflow.
 
 ## Проверка
 

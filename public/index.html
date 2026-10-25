@@ -29,8 +29,8 @@
     <p>Подписка автоматически получает обновления исходного списка — обычно в течение минуты после его изменения.</p>
     <script>
       const subscriptionUrls = {
-        desktop: new URL("/desktop", window.location.origin).href,
-        mobile: new URL("/mobile", window.location.origin).href,
+        desktop: new URL("./desktop.txt", window.location.href).href,
+        mobile: new URL("./mobile.txt", window.location.href).href,
       };
 
       for (const [name, url] of Object.entries(subscriptionUrls)) {
