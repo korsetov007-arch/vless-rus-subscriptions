@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { serveSubscription } from "../_lib/subscription.js";
 
-test("returns a plain-text subscription with Happ metadata and only VLESS entries", async () => {
+test("returns a Happ subscription with its expected content type and VLESS entries", async () => {
   globalThis.caches = {
     default: {
       match: async () => undefined,
@@ -25,6 +25,9 @@ test("returns a plain-text subscription with Happ metadata and only VLESS entrie
     await response.text(),
     "#profile-title: VLESS Desktop\n#profile-update-interval: 1\nvless://id@example.com:443#Тест\n",
   );
+  assert.equal(response.headers.get("content-type"), "application/json");
+  assert.equal(response.headers.get("profile-title"), "VLESS Desktop");
+  assert.equal(response.headers.get("profile-update-interval"), "1");
   assert.equal(response.headers.get("cache-control"), "public, max-age=60, s-maxage=60");
 });
 

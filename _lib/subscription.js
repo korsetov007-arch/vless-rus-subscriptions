@@ -3,7 +3,7 @@ const CACHE_TTL_SECONDS = 60;
 const responseHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Cache-Control": `public, max-age=${CACHE_TTL_SECONDS}, s-maxage=${CACHE_TTL_SECONDS}`,
-  "Content-Type": "text/plain; charset=utf-8",
+  "Content-Type": "application/json",
   "X-Content-Type-Options": "nosniff",
 };
 
@@ -54,7 +54,13 @@ export async function serveSubscription(request, sourceUrl, profileTitle) {
     ...entries,
     "",
   ].join("\n");
-  const response = new Response(body, { headers: responseHeaders });
+  const response = new Response(body, {
+    headers: {
+      ...responseHeaders,
+      "profile-title": profileTitle,
+      "profile-update-interval": "1",
+    },
+  });
 
   await cache.put(cacheKey, response.clone());
   return response;
